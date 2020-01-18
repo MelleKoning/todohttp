@@ -170,3 +170,16 @@ State: Some masterdata should still be persisted and exposed:
 - todo-state: each item can have only one state 'TODO', 'BUSY', 'DONE'
 - labels: each item can have one or  more labels to assign to items
   - the user might want to create or remove labels
+
+extract repository
+==================
+database actions should be in its own repository, therefore moving those actions out.
+
+* https://github.com/vektra/mockery
+
+mockery -name=TodoRepository -dir ./mongo
+
+run tests
+=========
+go test
+will run the test in server_test.go as an example

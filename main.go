@@ -10,43 +10,17 @@ import (
 
 	"gopkg.in/mgo.v2/bson"
 
+	"github.com/MelleKoning/todohttp/models"
 	"github.com/rs/cors"
 
+	mongotododb "github.com/MelleKoning/todohttp/mongo"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2"
 )
 
-// TodoItem reference for the item in mongo
-type TodoItem struct {
-	ID        bson.ObjectId `json:"_id,omitempty" bson:"_id,omitempty"`
-	Text      string        `json:"text" bson:"text"`
-	Status    string        `json:"status" bson:"status"`
-	DueDate   time.Time     `json:"duedate" bson:"duedate"`
-	CreatedAt time.Time     `json:"createdAt" bson:"created_at"`
-}
-
-// TodoItemStatusItem is one of the available status,
-// should be available to frontend as a list of known status, for example (TODO, BUSY, DONE)
-type TodoItemStatusItem struct {
-	// ID        bson.ObjectId `json:"_id,omitempty" bson:"_id,omitempty"`
-	Status string `json:"status" bson:"status"`
-}
-
-/*
-example json
-{
-  "todo_item": {
-    "todoitem_id": "34",
-    "description": "string",
-    "time_due": "2020-01-17T13:57:57.974Z",
-    "status": "BUSY",
-    "todo_labels": [
-      "RED"
-    ]
-  }
-}
-*/
 var todoitems *mgo.Collection
+
+var todoRepository mongotododb.TodoRepository
 
 func main() {
 	// Connect to mongo
@@ -61,6 +35,14 @@ func main() {
 
 	// Get todo collection
 	todoitems = session.DB("mongotododb").C("todoitems")
+
+	// setup repository
+	todoRepository, err = mongotododb.NewTodoDatabase("mongo1:27017")
+	if err != nil {
+		log.Fatalln(err)
+		log.Fatalln("mongo err")
+		os.Exit(1)
+	}
 
 	// Set up routes
 	r := mux.NewRouter()
@@ -83,17 +65,8 @@ func createTodoItem(w http.ResponseWriter, r *http.Request) {
 	}
 	todoitem.CreatedAt = time.Now().UTC()
 
-	// Insert new item
-	if err := todoitems.Insert(todoitem); err != nil {
-		responseError(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	result := &TodoItem{}
-	// we also want to return the created bson.Id so we Find back the last inserted item
-	// the new mongo driver has InsertOne, but mgo.v2 does not have that yet
-	if err := todoitems.Find(nil).Sort("-created_at").One(&result); err != nil {
-		log.Print("could not find back the inserted item")
+	result, err := todoRepository.Insert(todoitem)
+	if err != nil {
 		responseError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -101,7 +74,7 @@ func createTodoItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func readTodoItems(w http.ResponseWriter, r *http.Request) {
-	result := []TodoItem{}
+	result := []models.TodoItem{}
 	if err := todoitems.Find(nil).Sort("-created_at").All(&result); err != nil {
 		responseError(w, err.Error(), http.StatusInternalServerError)
 	} else {
@@ -115,7 +88,7 @@ func updateTodoItem(w http.ResponseWriter, r *http.Request) {
 		log.Print("Could not read item from json")
 		return
 	}
-	result := TodoItem{}
+	result := models.TodoItem{}
 	if err := todoitems.FindId(todoitem.ID).One(&result); err != nil {
 		log.Print("Could not find that item, it should exist")
 		responseError(w, err.Error(), http.StatusGone)
@@ -140,7 +113,7 @@ func deleteTodoItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// find item that is to be deleted
-	result := TodoItem{}
+	result := models.TodoItem{}
 	if err := todoitems.FindId(todoitem.ID).One(&result); err != nil {
 		log.Print("Could not find that item, it should exist to be deletable")
 		responseError(w, err.Error(), http.StatusGone)
@@ -158,7 +131,7 @@ func deleteTodoItem(w http.ResponseWriter, r *http.Request) {
 	responseJSON(w, result)
 
 }
-func readTodoItemFromBody(w http.ResponseWriter, r *http.Request) (*TodoItem, error) {
+func readTodoItemFromBody(w http.ResponseWriter, r *http.Request) (*models.TodoItem, error) {
 	// Read body
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -167,7 +140,7 @@ func readTodoItemFromBody(w http.ResponseWriter, r *http.Request) (*TodoItem, er
 	}
 
 	// Read todoItem
-	todoitem := &TodoItem{}
+	todoitem := &models.TodoItem{}
 	err = json.Unmarshal(data, todoitem)
 	if err != nil {
 		responseError(w, err.Error(), http.StatusBadRequest)
@@ -177,15 +150,15 @@ func readTodoItemFromBody(w http.ResponseWriter, r *http.Request) (*TodoItem, er
 }
 
 func readTodoItemStatus(w http.ResponseWriter, r *http.Request) { //} []*TodoItemStatusItem {
-	todoitemstatuslist := []*TodoItemStatusItem{
+	todoitemstatuslist := []*models.TodoItemStatusItem{
 
-		&TodoItemStatusItem{
+		&models.TodoItemStatusItem{
 			Status: "TODO",
 		},
-		&TodoItemStatusItem{
+		&models.TodoItemStatusItem{
 			Status: "BUSY",
 		},
-		&TodoItemStatusItem{
+		&models.TodoItemStatusItem{
 			Status: "DONE",
 		},
 	}
