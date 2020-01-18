@@ -60,7 +60,7 @@ func main() {
 		Methods("POST")
 	r.HandleFunc("/todolist", readTodoItems).
 		Methods("GET")
-	//r.HandleFunc("/updatetodoitem", updateTodoItem).Methods("POST")
+	r.HandleFunc("/updatetodoitem", updateTodoItem).Methods("POST")
 	http.ListenAndServe(":8080", cors.AllowAll().Handler(r))
 	log.Println("Listening on port 8080...")
 }
@@ -100,12 +100,44 @@ func readTodoItems(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
 func updateTodoItem(w http.ResponseWriter, r *http.Request) {
+	todoitem, err := readTodoItemFromBody(w, r)
+	if err != nil {
+		log.Print("Could not read item from json")
+		return
+	}
 	result := TodoItem{}
-	if err := todoitems.FindId()
+	if err := todoitems.FindId(todoitem.ID).One(&result); err != nil {
+		log.Print("Could not find that item, it should already exist")
+		responseError(w, err.Error(), http.StatusInternalServerError)
+	}
+	// yes, valid item, please update
+	if info, err := todoitems.UpsertId(todoitem.ID, &todoitem); err != nil {
+		log.Printf("Upsert failed %v %v", info, err)
+		responseError(w, err.Error(), http.StatusInternalServerError)
+	}
+	result = *todoitem
+	responseJSON(w, result)
+
 }
-*/
+
+func readTodoItemFromBody(w http.ResponseWriter, r *http.Request) (*TodoItem, error) {
+	// Read body
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responseError(w, err.Error(), http.StatusBadRequest)
+		return nil, err
+	}
+
+	// Read todoItem
+	todoitem := &TodoItem{}
+	err = json.Unmarshal(data, todoitem)
+	if err != nil {
+		responseError(w, err.Error(), http.StatusBadRequest)
+		return nil, err
+	}
+	return todoitem, nil
+}
 func responseError(w http.ResponseWriter, message string, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
