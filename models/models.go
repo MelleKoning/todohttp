@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -20,6 +21,22 @@ type TodoItem struct {
 type TodoItemStatusItem struct {
 	// ID        bson.ObjectId `json:"_id,omitempty" bson:"_id,omitempty"`
 	Status string `json:"status" bson:"status"`
+}
+
+// HasValidStatus verifies the status of the todoitem
+func (t *TodoItem) HasValidStatus() error {
+	status := []string{"TODO", "BUSY", "DONE"}
+	statusvalid := false
+	for _, b := range status {
+		if b == t.Status {
+			statusvalid = true
+		}
+	}
+
+	if !statusvalid {
+		return errors.New("status not valid, must be in TODO, BUSY, DONE")
+	}
+	return nil
 }
 
 /*

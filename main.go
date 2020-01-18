@@ -21,6 +21,7 @@ import (
 var todoitems *mgo.Collection
 
 var todoRepository mongotododb.TodoRepository
+var serverService ServerSvc
 
 func main() {
 	// Connect to mongo
@@ -36,13 +37,7 @@ func main() {
 	// Get todo collection
 	todoitems = session.DB("mongotododb").C("todoitems")
 
-	// setup repository
-	todoRepository, err = mongotododb.NewTodoDatabase("mongo1:27017")
-	if err != nil {
-		log.Fatalln(err)
-		log.Fatalln("mongo err")
-		os.Exit(1)
-	}
+	initializeServerPackage()
 
 	// Set up routes
 	r := mux.NewRouter()
@@ -57,6 +52,26 @@ func main() {
 	log.Println("Listening on port 8080...")
 }
 
+func initializeServerPackage() {
+
+	// TODO setup repository, now connected to mongo1 docker instance
+	// which is 127.0.0.1 on dev machine, should come from ENV var
+	todoRepository, err := mongotododb.NewTodoDatabase("mongo1:27017")
+	if err != nil {
+		log.Fatalln(err)
+		log.Fatalln("mongo err")
+		os.Exit(1)
+	}
+	// inject the repository into the ServerPackage
+	serverService, err = NewServer(todoRepository)
+	if err != nil || serverService == nil {
+		log.Fatalln(err)
+		log.Fatalln("ServerPackage initialization err")
+		os.Exit(1)
+	}
+	return
+
+}
 func createTodoItem(w http.ResponseWriter, r *http.Request) {
 	todoitem, err := readTodoItemFromBody(w, r)
 	if err != nil {
@@ -65,7 +80,9 @@ func createTodoItem(w http.ResponseWriter, r *http.Request) {
 	}
 	todoitem.CreatedAt = time.Now().UTC()
 
-	result, err := todoRepository.Insert(todoitem)
+	// wire now to the serverService instance/ServerPackage struct
+	// which has the status-validation 'business logic'
+	result, err := serverService.InsertTodoItem(todoitem)
 	if err != nil {
 		responseError(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -181,5 +181,10 @@ mockery -name=TodoRepository -dir ./mongo
 
 run tests
 =========
-go test
-will run the test in server_test.go as an example
+go test (or go test -v)
+will run the tests in server_test.go as an example
+
+visualize
+go test -v -coverprofile=coverserver
+go tool cover -html=coverserver
+and select 'server' in dropdown as 'main' does not have coverage
