@@ -165,3 +165,8 @@ Deployment strategy.
 Other ideas
 ===========
 This is a very bare version http project whereby code is all in main. Simple and effective but hard to add (unit)tests. Please see other project for when using proto files for messaging between client/server and a better differentiation of models, databaserepository, services.
+
+State: Some masterdata should still be persisted and exposed:
+- todo-state: each item can have only one state 'TODO', 'BUSY', 'DONE'
+- labels: each item can have one or  more labels to assign to items
+  - the user might want to create or remove labels
