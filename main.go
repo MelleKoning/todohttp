@@ -57,11 +57,10 @@ func main() {
 
 	// Set up routes
 	r := mux.NewRouter()
-	r.HandleFunc("/addtodoitem", createTodoItem).
-		Methods("POST")
-	r.HandleFunc("/todolist", readTodoItems).
-		Methods("GET")
+	r.HandleFunc("/addtodoitem", createTodoItem).Methods("POST")
+	r.HandleFunc("/todolist", readTodoItems).Methods("GET")
 	r.HandleFunc("/updatetodoitem", updateTodoItem).Methods("POST")
+	r.HandleFunc("/deletetodoitem", deleteTodoItem).Methods("DELETE")
 	http.ListenAndServe(":8080", cors.AllowAll().Handler(r))
 	log.Println("Listening on port 8080...")
 }
@@ -121,6 +120,30 @@ func updateTodoItem(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func deleteTodoItem(w http.ResponseWriter, r *http.Request) {
+	todoitem, err := readTodoItemFromBody(w, r)
+	if err != nil {
+		log.Print("Could not read item from json")
+		return
+	}
+
+	// find item that is to be deleted
+	result := TodoItem{}
+	if err := todoitems.FindId(todoitem.ID).One(&result); err != nil {
+		log.Print("Could not find that item, it should exist to be deletable")
+		responseError(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	// delete the found item
+	filter := bson.M{"_id": result.ID}
+	if err := todoitems.Remove(filter); err != nil {
+		log.Printf("Remove failed %v", err)
+		responseError(w, err.Error(), http.StatusInternalServerError)
+	}
+	result = *todoitem
+	responseJSON(w, result)
+
+}
 func readTodoItemFromBody(w http.ResponseWriter, r *http.Request) (*TodoItem, error) {
 	// Read body
 	data, err := ioutil.ReadAll(r.Body)

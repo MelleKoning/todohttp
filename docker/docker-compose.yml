@@ -9,6 +9,10 @@ services:
     - MONGO_INITDB_ROOT_PASSWORD=tododbpass # db container root password
     volumes:
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-      - ./mongodata:/data/db
+      - "mongodata:/data/db" #- ./mongodata:/data/db  #    command: mongod --smallfiles --logpath=/dev/null
     ports:
-      - '27017-27019:27017-27019'
+      - '27017:27017'
+    
+volumes:
+  mongodata:
+    external: true
