@@ -21,6 +21,7 @@ type TodoItem struct {
 	ID        bson.ObjectId `json:"_id,omitempty" bson:"_id,omitempty"`
 	Text      string        `json:"text" bson:"text"`
 	Status    string        `json:"status" bson:"status"`
+	DueDate   time.Time     `json:"duedate" bson:"duedate"`
 	CreatedAt time.Time     `json:"createdAt" bson:"created_at"`
 }
 
@@ -66,18 +67,9 @@ func main() {
 }
 
 func createTodoItem(w http.ResponseWriter, r *http.Request) {
-	// Read body
-	data, err := ioutil.ReadAll(r.Body)
+	todoitem, err := readTodoItemFromBody(w, r)
 	if err != nil {
-		responseError(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Read todoItem
-	todoitem := &TodoItem{}
-	err = json.Unmarshal(data, todoitem)
-	if err != nil {
-		responseError(w, err.Error(), http.StatusBadRequest)
+		log.Print("Could not read item from json")
 		return
 	}
 	todoitem.CreatedAt = time.Now().UTC()
@@ -88,7 +80,15 @@ func createTodoItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseJSON(w, todoitem)
+	result := &TodoItem{}
+	// we also want to return the created bson.Id so we Find back the last inserted item
+	// the new mongo driver has InsertOne, but mgo.v2 does not have that yet
+	if err := todoitems.Find(nil).Sort("-created_at").One(&result); err != nil {
+		log.Print("could not find back the inserted item")
+		responseError(w, err.Error(), http.StatusInternalServerError)
+
+	}
+	responseJSON(w, result)
 }
 
 func readTodoItems(w http.ResponseWriter, r *http.Request) {
