@@ -1,0 +1,16 @@
+version: '3'
+services:
+    todohttp:
+        build: ./
+        ports: 
+        - 8080:8080
+        volumes:
+        - ./todohttp:/go/src/github.com/MelleKoning/todohttp
+        links:
+        - database
+        environment:
+        - DB_NAME=mongotododb
+    database:
+        image: mongo:latest
+        command: mongod --smallfiles --quiet --logpath=/dev/null
+  

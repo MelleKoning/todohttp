@@ -1,4 +1,5 @@
 version: '3'
+
 services:
   database:
     image: 'mongo' # create from this image
@@ -6,13 +7,14 @@ services:
     environment:
     - MONGO_INITDB_DATABASE=mongotododb # database name we want to make
     - MONGO_INITDB_ROOT_USERNAME=tododbuser # db container root username
-    - MONGO_INITDB_ROOT_PASSWORD=tododbpass # db container root password
+    - MONGO_INITDB_ROOT_PASSWORD=tododbpass
+    user: root
     volumes:
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-      - "mongodata:/data/db" #- ./mongodata:/data/db  #    command: mongod --smallfiles --logpath=/dev/null
+      - "mongodata:/data/db"
     ports:
       - '27017:27017'
-    
+      
 volumes:
   mongodata:
     external: true

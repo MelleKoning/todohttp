@@ -1,0 +1,15 @@
+FROM golang:latest
+
+# Copy the local package files to the container’s workspace.
+WORKDIR /go/src/github.com/MelleKoning/todohttp
+
+COPY . .
+
+# Install, all dependencies are in vendor
+RUN go install 
+
+# Set binary as entrypoint
+ENTRYPOINT /go/bin/todohttp
+
+# Expose default port (8080)
+EXPOSE 8080 

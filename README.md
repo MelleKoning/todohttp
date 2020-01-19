@@ -12,8 +12,12 @@ folder
 contains the script to start a mongodb instance in docker with
 * docker-compose -f ./docker/docker-compose.yml up -d 
 
+* docker-compose -f ./dockersvc/docker-compose.yml up -d 
+above should create a mongo instance with access credentials (test not finished yet)
+
 on windows a volume is needed to store data
 (Run once) Create a external named volume for MongoDB
+These commands will give a mongo container with unrestricted access for test purposes
 * docker volume create --name=mongodata
 * docker run -d -p 27017:27017 -v mongodata:/data/db --name=tododb-mongo-container mongo
 
