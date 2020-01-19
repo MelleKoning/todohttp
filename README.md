@@ -192,3 +192,33 @@ visualize
 go test -v -coverprofile=coverserver
 go tool cover -html=coverserver
 and select 'server' in dropdown as 'main' does not have coverage
+
+folder structure
+================
+```
+todolst(root)
+│   README.md
+│   ...    
+└───cmd
+│   └───server
+│       └─── main.go // main entry for starting the server...
+└───docker
+│   └─── containing databsae docker image(s)
+│
+└───dockersvc
+│   └─── should get script for generating this service docker image/container
+│
+└───mocks
+│   └───   contains generated mocks from mockery used by tests
+│
+└───mongo
+│   └───   the communication to the database
+│
+└───models
+│   └───  has the used todoitem model exposed and stored in db
+└───vendor
+    └───  vendored packages controlled with dep
+└───server
+    │   server related files that are used in main
+    │   should contain tests for any business logic
+```

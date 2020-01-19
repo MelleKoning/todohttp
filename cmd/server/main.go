@@ -14,6 +14,7 @@ import (
 	"github.com/rs/cors"
 
 	mongotododb "github.com/MelleKoning/todohttp/mongo"
+	server "github.com/MelleKoning/todohttp/server"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2"
 )
@@ -21,7 +22,7 @@ import (
 var todoitems *mgo.Collection
 
 var todoRepository mongotododb.TodoRepository
-var serverService ServerSvc
+var serverService server.ServerSvc
 
 func main() {
 	// Connect to mongo
@@ -63,7 +64,7 @@ func initializeServerPackage() {
 		os.Exit(1)
 	}
 	// inject the repository into the ServerPackage
-	serverService, err = NewServer(todoRepository)
+	serverService, err = server.NewServer(todoRepository)
 	if err != nil || serverService == nil {
 		log.Fatalln(err)
 		log.Fatalln("ServerPackage initialization err")
