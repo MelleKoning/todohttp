@@ -2,42 +2,56 @@
 
 
 [[projects]]
-  digest = "1:cbec35fe4d5a4fba369a656a8cd65e244ea2c743007d8f6c1ccb132acf9d1296"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   name = "github.com/gorilla/mux"
   packages = ["."]
-  pruneopts = "UT"
   revision = "00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15"
   version = "v1.7.3"
 
 [[projects]]
-  digest = "1:c5dfe46811af7e2eff7c11fc84b6c841520338613c056f659f262d5a4fb42fa8"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/rs/cors"
   packages = ["."]
-  pruneopts = "UT"
   revision = "db0fe48135e83b5812a5a31be0eea66984b1b521"
   version = "v1.7.0"
 
 [[projects]]
+  name = "github.com/stretchr/objx"
+  packages = ["."]
+  revision = "ea4fe68685ee0d3cee7032121851b57e7494e8ea"
+  version = "v0.2.0"
+
+[[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert","mock"]
+  revision = "3ebf1ddaeb260c4b1ae502a01c7844fa8c1fa0e9"
+  version = "v1.5.1"
+
+[[projects]]
   branch = "v2"
-  digest = "1:4af24de1cba937fb5ef082e8860a47fd46282e6863c01930359368ee121e3114"
   name = "gopkg.in/mgo.v2"
-  packages = [
-    ".",
-    "bson",
-    "internal/json",
-    "internal/sasl",
-    "internal/scram",
-  ]
-  pruneopts = "UT"
+  packages = [".","bson","internal/json","internal/sasl","internal/scram"]
   revision = "a6b53ec6cb22a3699387a57a161566f9402ee85b"
+
+[[projects]]
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "53403b58ad1b561927d19068c655246f2db79d48"
+  version = "v2.2.8"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = [
-    "github.com/gorilla/mux",
-    "github.com/rs/cors",
-    "gopkg.in/mgo.v2",
-  ]
+  inputs-digest = "b3d4e80abf82516397436997e7666e49e26ca61450b7e52d9824c62a273d17b2"
   solver-name = "gps-cdcl"
   solver-version = 1
